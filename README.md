@@ -49,72 +49,42 @@ It is relevant in circumstances such as:
 
 [More informations from Proxmox offical website](https://www.proxmox.com/en/products/proxmox-virtual-environment/requirements).
 
-## Procedure steps
-### Download the Windows Server 2022 ISO
-1. Download the Windows Server 2022 ISO from the [Microsoft Evaluation Center](https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2022).  
-2. Click on the “Download the ISO” button.
-3. Fill in your information in the form and click “Download”.
-4. Select “Windows Server 2022 Standard” or “Windows Server 2022 Datacenter” base on purpose.
-5. Click the “Confirm” button. The ISO download will be start.
+## Manual migration procedure steps
+### Source VM Preparation
+1. Document the test VM’s configuration (CPU, memory, disk, network) for reference.
+2. Record the VM’s network settings (IP address, MAC address, DHCP details)..  
+3. For Windows VMs, remove static IP configurations to avoid conflicts post-migration.
+4. If full-disk encryption is used, ensure manual decryption keys are available (vTPM migration is not supported).
+5. In the **File** section, click **Export to OVF** and save the .OVF file
+![image](https://github.com/user-attachments/assets/2e6c0342-0dc4-4832-ac88-c45e9ffbe217)
 
-Table for the directly download links:
+### Target Environment Check
+1.Verify that Proxmox VE is version 8 or higher and fully updated (via the web console interface: Datacenter > Updates).
+2.Ensure sufficient storage space is available on the target Proxmox node.
 
-|Language                | ISO Downloads                                                                                                | VHD download                                                                                                 |
-|------------------------|--------------------------------------------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------------------|
-|English (United States) | ISO [64-bit edition](https://go.microsoft.com/fwlink/p/?LinkID=2195280&clcid=0x409&culture=en-us&country=US) | VHD [64-bit edition](https://go.microsoft.com/fwlink/p/?linkid=2195166&clcid=0x409&culture=en-us&country=us) |
-|French                  | ISO  [64-bit edition](https://go.microsoft.com/fwlink/p/?LinkID=2195280&clcid=0x40c&culture=fr-fr&country=FR) |                                                                                                             |
+### Configure Target VM 
+1. Go to the Proxmox web console interface, select a node, and click **Create VM**.
+2. Assign a unique VMID and name.
+![image](https://github.com/user-attachments/assets/8610ea7f-4fa6-443d-b2b5-ef9497ad1cbd)
+3. In the **OS** section, click **Do not use any media**. 
+4. In the **System** section, keep that all options are set as default.
+5. In the **Disks** section, keep that all options are set as default.
+6. In the **CPU** section, make sure the cpu type choose **x86-64-v2-AES** , the other settings can be adjusted based on the VM to be migrated.
+![image](https://github.com/user-attachments/assets/04ab5fa7-89aa-43b6-8e3f-6b24daaf6132)
+7. In the **Memory** section, the settings can be adjusted based on the VM to be migrated. Enable the **Ballooning Device** in the **Advanced** settings to monitor memory usage.
+![image](https://github.com/user-attachments/assets/3da3123d-14ad-45fa-9229-4084868b8ec8)
+8. Network Configuration, Add a network device with the **VirtIO** model for best performance. Connect it to the appropriate network bridge (e.g vmbr0).
+9. Click **Finish** and the VM will be ready to use.
+10. Go to the VM you just create, click **Hardware**.
+11. Select **Hard disk(xxx)** and click **Detach**, click **Yes**.
+![image](https://github.com/user-attachments/assets/38efc4e1-9750-4d4f-8251-f0323768f175)
 
-### Install Windows Server 2022 on VMWare Workstation
-1.  [Download](https://www.techspot.com/downloads/downloadnowfile/189/?evp=4c50cf08866937ea246522b86f4d4286&file=241), install and open the VMWare workstation.
-2.   Click on **Create a New Virtual Machine** button.
-3.   VMWare Workstation will be greeted with two options, Typical and Custom. Choose **Typical** with the default recommended settings.
-4. Chose the third option, install in interactive mode (More options to choose during the installation process.)
-5. Choose **Microsoft Windows Server 2022** as the guest operating system.
-![](https://www.datocms-assets.com/104397/1708651058-choose-the-microsoft-windows-server-2022.png?auto=format&dpr=4)
-6. Give a name for the VM and choose the location to store the VM.
-7. Specify the disk capacity according to requirements, and choose the options to save the disk as split storage or single storage.
-8. That completes the VM configuration.  Take a review and go for customization if needed or click on the **Finish** to complete the VM setup process.
-9. Click on the **CD Rom** and select the Windows Server 2022 ISO file.
-10. Power on the VM.
-11. When VM booted, it asked to press any key to boot from the CR-ROM. Hit **Enter**.
-![](https://www.datocms-assets.com/104397/1708651104-boot-from-the-cd-rom.png?auto=format&dpr=3)
-12. Windows will boot from the CD-ROM with ISO and ask for the installation. Click **Next**.
-13. Click **Install now**.
-14. Choose either **Standard** or **Datacenter** editions. Click **Next**.  ※Desktop Experience with GUI and CLI version with powershell.
-![](https://www.datocms-assets.com/104397/1708651127-choose-windows-version-to-install.png?auto=format&dpr=3)
-15. Read and **Accept the License Agreement** to continue. Click **Next**.
-16. Windows asks for the installation type and installation drive. Choose the second option **Custom**.
-17. Choose the drive to install, Click **Next**
-18. Installation will begin start.
-![](https://www.datocms-assets.com/104397/1708651164-installation-is-in-progress.png?auto=format&dpr=3)
-19. The VM reboots upon the installation process. Click **Reboot now**
-![](https://www.datocms-assets.com/104397/1708651172-reboot-windows-server-2022-in-few-seconds.png?auto=format&dpr=3)
-20. After the reboot process. Windows will ask to create an Administrator account. Enter the Password and Click the **Finish** to finish the installation.
-![](https://www.datocms-assets.com/104397/1708651179-create-administrator-account.png?auto=format&dpr=3)
-21. The installation process completes. Hit the **Ctrl+Alt+Delete** keys to log in.
-22. Windows Server 2022 has been successfully installed on VMware.
-![](https://www.datocms-assets.com/104397/1708651196-windows-server-2022-desktop.png?auto=format&dpr=3)
 
-### Change the Time Zone
-1. Open **Settings**.
-2. Go to **Time & Language**.
-3. Select **Date & time**.
-4. Turn off **Set time zone automatically**.
-![](https://anakage.com/blog/wp-content/uploads/2022/01/image2-1.jpg)
-5. Go to the **Time zone** drop-down menu and choose correctly time zone.
-![](https://anakage.com/blog/wp-content/uploads/2022/01/image3-1.jpg)
 
-### Change the hostname
-1. Open **Server Manager** from the **Start Menu**. 
-2. In Server Manager, select Local Server in the left-hand menu followed by selecting the current name of your server Next to **Computer name**.
-3. In the System Properties window, under the Computer Name tab, **select Change**.
-![](https://s3.amazonaws.com/cdn.freshdesk.com/data/helpdesk/attachments/production/11120332911/original/eNZbU-hRYSk_Fr983dmaI921GoOMhStwSw.png?1728339765)
-4. Enter your desired server name in the Computer name field, then select **More**.
-![](https://s3.amazonaws.com/cdn.freshdesk.com/data/helpdesk/attachments/production/11120332914/original/uooywpVvXjcUNFgM4ultSjLxpj3SalFr8A.png?1728339798)
-5. If required, enter your Primary DNS for your server and select **OK**.
-6. Restart the server to apply the changes. Select **OK**.
-7. Once your system restarts, open Server Manager again to verify that the server name has been successfully updated.
-![](https://s3.amazonaws.com/cdn.freshdesk.com/data/helpdesk/attachments/production/11120333033/original/LhpfOZN4R_GaWTLOUH0bsg_cph8MIB6SmQ.png?1728340022)
+
+
+
+
 
 ## References
 1. [Windows Server 2022 | Microsoft Evaluation Center](https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2022)
