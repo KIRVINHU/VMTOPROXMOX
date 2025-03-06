@@ -59,7 +59,7 @@ It is relevant in circumstances such as:
 ![image](https://github.com/user-attachments/assets/2e6c0342-0dc4-4832-ac88-c45e9ffbe217)
 
 ### Target Environment Check
-1.Verify that Proxmox VE is version 8 or higher and fully updated (via the web console interface: Datacenter > Updates).
+1.Verify that Proxmox VE is version 8 or higher and fully updated (via the web console interface: Datacenter > Updates).\
 2.Ensure sufficient storage space is available on the target Proxmox node.
 
 ### Configure Target VM 
@@ -71,7 +71,8 @@ It is relevant in circumstances such as:
 5. In the **Disks** section, keep that all options are set as default.
 6. In the **CPU** section, make sure the cpu type choose **x86-64-v2-AES** , the other settings can be adjusted based on the VM to be migrated.
 ![image](https://github.com/user-attachments/assets/04ab5fa7-89aa-43b6-8e3f-6b24daaf6132)
-7. In the **Memory** section, the settings can be adjusted based on the VM to be migrated. Enable the **Ballooning Device** in the **Advanced** settings to monitor memory usage.
+7. In the **Memory** section, the settings can be adjusted based on the VM to be migrated.\
+Enable the **Ballooning Device** in the **Advanced** settings to monitor memory usage.
 ![image](https://github.com/user-attachments/assets/3da3123d-14ad-45fa-9229-4084868b8ec8)
 8. Network Configuration, Add a network device with the **VirtIO** model for best performance. Connect it to the appropriate network bridge (e.g vmbr0).
 9. Click **Finish** and the VM will be ready to use.
@@ -79,7 +80,8 @@ It is relevant in circumstances such as:
 11. Select **Hard disk(xxx)** and click **Detach**, click **Yes**. Later we will use .OVF file to replace the Hard disk.
 ![image](https://github.com/user-attachments/assets/38efc4e1-9750-4d4f-8251-f0323768f175)
 12. Go to the machine with Proxmox, plug the usb which storage the .OVF file.
-13. Check the usb device is patch(If sdb is our usb). And mount the device to Proxmox. After you mount the device, you can find out the .OVF file.(test-vm.ovf)
+13. Check the usb device is patch(If sdb is our usb). And mount the device to Proxmox.\ 
+After you mount the device, you can find out the .OVF file.(test-vm.ovf)
 ```
 $ lsblk
 $ sudo mkdir /data
@@ -92,19 +94,21 @@ It may have 3 kind of files inside : .vmdk .mf and .ovf
 ```
 $ tar xvf test-vm.ovf
 ```
-15. Import the OVF file to virtual machine. (VMID is 100, VM Storage is local-lvm)
+15. Import the OVF file to virtual machine. (VMID is 100, VM Storage is local-lvm)\
 qm importovf {vmid} {VM name}.ovf {target storage}
 ```
 $ qm importovf 100 ./test-vm.ovf local-lvm
 ```
-16. Import the vmdk file to virtual machine. When the transfer has completed you will have to enable the disk in proxmox.
+16. Import the vmdk file to virtual machine. When the transfer has completed you will have to enable the disk in proxmox.\
 qm importdisk {vmid} {VM name}.vmdk {target storage}
 ```
 $ qm importdisk 100 ./test-vm.vmdk local-lvm -f qcow2
 ```
-17. Go back to the Proxmox web console interface, select the **VM with VMID 100**. Click the **Hardware**, followed by **unused disk**, press **edit** then **Add** in the option.
+17. Go back to the Proxmox web console interface, select the **VM with VMID 100**.\
+Click the **Hardware**, followed by **unused disk**, press **edit** then **Add** in the option.
 ![螢幕擷取畫面 2025-03-05 201608](https://github.com/user-attachments/assets/bb8fb090-f68c-423e-b4c9-9b85b1dbeef5)
-18. In the **Options** menu, click **Boot order** then edit, uncheck ide2 and net. Then check the scsi0 and click **OK**. Now you can start using the virtual machine.
+19. In the **Options** menu, click **Boot order** then edit, uncheck ide2 and net. Then check the scsi0 and click **OK**.\
+Now you can start using the virtual machine.
 ![image](https://github.com/user-attachments/assets/6656eb8c-5611-441a-bbe8-65f02b34b2fd)
 
 
