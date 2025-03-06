@@ -55,7 +55,7 @@ It is relevant in circumstances such as:
 2. Record the VM’s network settings (IP address, MAC address, DHCP details)..  
 3. For Windows VMs, remove static IP configurations to avoid conflicts post-migration.
 4. If full-disk encryption is used, ensure manual decryption keys are available (vTPM migration is not supported).
-5. In the **File** section, click **Export to OVF** and save the .OVF file
+5. In the **File** section, click **Export to OVF** and save the .OVF file to the portable hard disk (Recommended SSD)
 ![image](https://github.com/user-attachments/assets/2e6c0342-0dc4-4832-ac88-c45e9ffbe217)
 
 ### Target Environment Check
@@ -64,7 +64,7 @@ It is relevant in circumstances such as:
 
 ### Configure Target VM 
 1. Go to the Proxmox web console interface, select a node, and click **Create VM**.
-2. Assign a unique VMID and name.
+2. Assign a unique VMID and name. (VMID 100)
 ![image](https://github.com/user-attachments/assets/8610ea7f-4fa6-443d-b2b5-ef9497ad1cbd)
 3. In the **OS** section, click **Do not use any media**. 
 4. In the **System** section, keep that all options are set as default.
@@ -76,19 +76,41 @@ It is relevant in circumstances such as:
 8. Network Configuration, Add a network device with the **VirtIO** model for best performance. Connect it to the appropriate network bridge (e.g vmbr0).
 9. Click **Finish** and the VM will be ready to use.
 10. Go to the VM you just create, click **Hardware**.
-11. Select **Hard disk(xxx)** and click **Detach**, click **Yes**.
+11. Select **Hard disk(xxx)** and click **Detach**, click **Yes**. Later we will use .OVF file to replace the Hard disk.
 ![image](https://github.com/user-attachments/assets/38efc4e1-9750-4d4f-8251-f0323768f175)
-
-
-
+12. Go to the machine with Proxmox, plug the usb which storage the .OVF file.
+13. Check the usb device is patch(If sdb is our usb). And mount the device to Proxmox. After you mount the device, you can find out the .OVF file.(test-vm.ovf)
+```
+$ lsblk
+$ sudo mkdir /data
+$ sudo mount /dev/sdb /data
+$ cd /data
+$ ls
+```
+14. Export the files from OVF archive using tar xvf followed by the name of the OVF archive.
+It may have 3 kind of files inside : .vmdk .mf and .ovf
+```
+$ tar xvf test-vm.ovf
+```
+15. Import the OVF file to virtual machine. (VMID is 100, VM Storage is local-lvm)
+qm importovf {vmid} {VM name}.ovf {target storage}
+```
+$ qm importovf 100 ./test-vm.ovf local-lvm
+```
+16. Import the vmdk file to virtual machine. When the transfer has completed you will have to enable the disk in proxmox.
+qm importdisk {vmid} {VM name}.vmdk {target storage}
+```
+$ qm importdisk 100 ./test-vm.vmdk local-lvm -f qcow2
+```
+17. Go back to the Proxmox web console interface, select the **VM with VMID 100**. Click the **Hardware**, followed by **unused disk**, press **edit** then **Add** in the option.
+![螢幕擷取畫面 2025-03-05 201608](https://github.com/user-attachments/assets/bb8fb090-f68c-423e-b4c9-9b85b1dbeef5)
+18. In the **Options** menu, click **Boot order** then edit, uncheck ide2 and net. Then check the scsi0 and click **OK**. Now you can start using the virtual machine.
+![image](https://github.com/user-attachments/assets/6656eb8c-5611-441a-bbe8-65f02b34b2fd)
 
 
 
 
 
 ## References
-1. [Windows Server 2022 | Microsoft Evaluation Center](https://www.microsoft.com/en-us/evalcenter/evaluate-windows-server-2022)
-2. [Hardware requirements for Windows Server](https://learn.microsoft.com/en-us/windows-server/get-started/hardware-requirements?tabs=cpu&pivots=windows-server-2025)
-3. [How to Create a Windows Server 2022 Virtual Machine With VMware](https://www.youtube.com/watch?v=II-a79HFQtQ)
-4. [How to Change Hostname/Server Name in Windows Server 2022](https://support.binarylane.com.au/support/solutions/articles/11000129152-how-to-change-hostname-server-name-in-windows-server-2022)
-5. [Windows Server 2022 Change Time Zone Greyed Out](https://www.ichi.co.uk/blog/windows-server-2022-change-time-zone-greyed-out)
+1. [Migrate to Proxmox VE](https://pve.proxmox.com/wiki/Migrate_to_Proxmox_VE)
+2. [Transfer virtual machines to Proxmox](https://www.youtube.com/watch?v=s7luyvrBVjY)
