@@ -107,7 +107,7 @@ $ qm importdisk 100 ./test-vm.vmdk local-lvm -f qcow2
 17. Go back to the Proxmox web console interface, select the **VM with VMID 100**.\
 Click the **Hardware**, followed by **unused disk**, press **edit** then **Add** in the option.
 ![螢幕擷取畫面 2025-03-05 201608](https://github.com/user-attachments/assets/bb8fb090-f68c-423e-b4c9-9b85b1dbeef5)
-19. In the **Options** menu, click **Boot order** then edit, uncheck ide2 and net. Then check the scsi0 and click **OK**.\
+19. In the **Options** menu, click **Boot order** then edit, uncheck ide2 and net0. Then check the scsi0 and click **OK**.\
 Now you can start using the virtual machine.
 ![image](https://github.com/user-attachments/assets/6656eb8c-5611-441a-bbe8-65f02b34b2fd)
 
